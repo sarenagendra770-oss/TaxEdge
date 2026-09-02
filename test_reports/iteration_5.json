@@ -1,0 +1,21 @@
+{
+  "summary": "Verified PAN/Aadhaar uniqueness enforcement on /auth/register. Backend: 5/5 pytest cases pass — anchor create/self-update (200), PAN conflict returns 409 with 'PAN already registered with us. Mobile: ******0004', Aadhaar conflict returns 409 with 'Aadhaar already registered with us. Mobile: ******0004', self-update excludes caller's own record (200), and fresh unique user still registers (200). Frontend E2E: with fresh mobile via OTP 123456, submitting profile with the anchor's PAN (QRSTU5678V) keeps the user on profile-card and renders the exact masked message inline under [data-testid=profile-pan] AND in a red toast. Same behavior confirmed for Aadhaar (999988887777) — inline error rendered under [data-testid=profile-aadhaar] with the exact string 'Aadhaar already registered with us. Mobile: ******0004'.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": ["/app/backend/tests/test_pan_aadhaar_uniqueness.py", "/app/test_reports/pytest/pan_aadhaar_uniqueness.xml"],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "maskMobile helper handles null and short strings safely; format uses len(mobile)-4 stars + last 4 digits — matches spec exactly for 10-digit mobiles ('******0004').",
+    "Uniqueness check in AuthService.register uses findFirstByPanAndMobileNot / findFirstByAadhaarAndMobileNot correctly excluding caller by mobile — self-update works.",
+    "PAN is uppercased before comparison; aadhaar compared as-is (12-digit numeric, so case not applicable). Consistent.",
+    "Frontend ProfileForm.submit catch maps 'PAN'/'Aadhaar'/'Email' via case-insensitive regex to setErr and also fires toast — user gets both inline error and transient toast."
+  ],
+  "updated_files": ["/app/backend/tests/test_pan_aadhaar_uniqueness.py"],
+  "success_rate": {"backend": "100% (5/5)", "frontend": "100% (PAN + Aadhaar E2E scenarios)"},
+  "test_credentials": "Anchor: mobile=9444000004 PAN=QRSTU5678V aadhaar=999988887777 (created/reused by test). OTP=123456.",
+  "seed_data_creation": "test_pan_aadhaar_uniqueness.py autouse fixture idempotently upserts anchor user A via /auth/login → /auth/otp/verify → /auth/register.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Anchor user A (mobile 9444000004, PAN QRSTU5678V, aadhaar 999988887777) must remain in DB for conflict tests. Run: pytest backend/tests/test_pan_aadhaar_uniqueness.py -o 'addopts=' — the anchor fixture recreates the user if missing. Login button testid is [data-testid=login-continue-btn] (not login-send-otp-btn).",
+  "rca of the issue": "N/A — feature works as designed."
+}

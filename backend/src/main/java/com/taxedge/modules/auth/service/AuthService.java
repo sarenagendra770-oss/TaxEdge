@@ -131,6 +131,23 @@ public class AuthService {
             throw new ApiException("Email already registered", HttpStatus.CONFLICT);
         }
 
+        // PAN / Aadhaar uniqueness — block if the value is already tied to a DIFFERENT mobile.
+        if (req.getPan() != null && !req.getPan().isBlank()) {
+            String pan = req.getPan().toUpperCase();
+            userRepo.findFirstByPanAndMobileNot(pan, req.getMobile()).ifPresent(other -> {
+                throw new ApiException(
+                        "PAN already registered with us. Mobile: " + maskMobile(other.getMobile()),
+                        HttpStatus.CONFLICT);
+            });
+        }
+        if (req.getAadhaar() != null && !req.getAadhaar().isBlank()) {
+            userRepo.findFirstByAadhaarAndMobileNot(req.getAadhaar(), req.getMobile()).ifPresent(other -> {
+                throw new ApiException(
+                        "Aadhaar already registered with us. Mobile: " + maskMobile(other.getMobile()),
+                        HttpStatus.CONFLICT);
+            });
+        }
+
         user.setFullName(req.getFullName());
         user.setEmail(req.getEmail());
         user.setCustomerType(req.getCustomerType());
@@ -148,5 +165,12 @@ public class AuthService {
         String token = jwtService.generate(user.getMobile(),
                 Map.of("role", user.getRole().name(), "uid", user.getId()));
         return new AuthResponse(token, UserDTO.from(user), true);
+    }
+
+    /** Mask a 10-digit mobile so only the last 4 digits are visible: "9876543210" -> "******3210". */
+    static String maskMobile(String mobile) {
+        if (mobile == null) return "******";
+        if (mobile.length() <= 4) return "*".repeat(Math.max(0, mobile.length() - 1)) + mobile.substring(mobile.length() - 1);
+        return "*".repeat(mobile.length() - 4) + mobile.substring(mobile.length() - 4);
     }
 }

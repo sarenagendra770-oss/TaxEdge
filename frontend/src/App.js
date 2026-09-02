@@ -320,7 +320,12 @@ function ProfileForm({ user, onAuthed }) {
       toast("Profile saved — welcome to TaxEdge", "success");
       onAuthed(token, u);
     } catch (e2) {
-      toast(e2?.response?.data?.message || "Could not save profile", "error");
+      const msg = e2?.response?.data?.message || "Could not save profile";
+      // Map server-side conflict messages onto the offending field
+      if (/PAN/i.test(msg)) setErr((s) => ({ ...s, pan: msg }));
+      else if (/Aadhaar/i.test(msg)) setErr((s) => ({ ...s, aadhaar: msg }));
+      else if (/Email/i.test(msg)) setErr((s) => ({ ...s, email: msg }));
+      toast(msg, "error");
     } finally { setLoading(false); }
   };
 

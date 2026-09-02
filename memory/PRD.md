@@ -60,3 +60,10 @@ OTP_STUB_CODE=123456
 - Login flow: `POST /auth/login {mobile}` → OTP screen → `POST /auth/otp/verify {mobile, otp}` → JWT.
 - Post-verify: if `registered:false`, route to profile screen and call `POST /auth/register {...}`. Response returns updated JWT.
 - Return-user shortcut: `POST /auth/password-login {mobile, password}` (only if the user opted to set a password during register).
+
+## Update — PAN/Aadhaar uniqueness on register
+- `POST /auth/register` now rejects a submission with `HTTP 409` when the PAN or Aadhaar is already tied to a **different** mobile number.
+- The response `message` reveals only the last 4 digits of the existing mobile, e.g. `"PAN already registered with us. Mobile: ******0004"`.
+- Self-update (same mobile) is unaffected — the check excludes the caller's own record.
+- Frontend `ProfileForm` maps the message to the corresponding field-level error (pan / aadhaar / email) and also raises a toast.
+- Verified via testing_agent iteration 5: backend 5/5, frontend 100%.

@@ -10,4 +10,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByMobile(String mobile);
     boolean existsByEmail(String email);
     boolean existsByMobile(String mobile);
+
+    /** find another user (different mobile) with the same PAN — used to block re-registration. */
+    Optional<User> findFirstByPanAndMobileNot(String pan, String mobile);
+    /** find another user (different mobile) with the same Aadhaar. */
+    Optional<User> findFirstByAadhaarAndMobileNot(String aadhaar, String mobile);
 }
