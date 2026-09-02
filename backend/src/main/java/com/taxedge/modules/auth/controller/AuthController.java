@@ -34,6 +34,12 @@ public class AuthController {
         return ApiResponse.ok("Verified", service.verifyOtp(req));
     }
 
+    /** Alternative to OTP: password login for return users on trusted devices. */
+    @PostMapping("/password-login")
+    public ApiResponse<AuthResponse> passwordLogin(@Valid @RequestBody PasswordLoginRequest req) {
+        return ApiResponse.ok("Logged in", service.passwordLogin(req));
+    }
+
     /** Step 3: fill/replace profile fields for the OTP-verified mobile. */
     @PostMapping("/register")
     public ApiResponse<AuthResponse> register(@Valid @RequestBody RegisterRequest req) {

@@ -1,0 +1,18 @@
+{
+  "summary": "Verified new POST /api/auth/password-login endpoint (5 scenarios) + OTP regression via pytest (6/6 passed), and validated frontend password-mode toggle end-to-end: initial OTP state, toggle to Password (shows password input + hint-password + CTA 'Sign in'), toggle back to OTP restores hint. Password happy path with 9911223344/secret123 lands on dashboard as 'Pwd Tester'. Wrong password shows 'Invalid mobile or password' in login-error with no token stored. Password attempt against a truly password-less OTP-only user shows 'No password set for this account — use OTP login'. OTP regression flow still lands on dashboard (Amit Sharma).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": ["/app/backend/tests/test_password_login.py", "/app/test_reports/pytest/password_login.xml"],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Note: memory/test_credentials.md states 9876543210 has password 'pass123'; the seeded DB user actually has a password set. Using 9876543210 with a wrong password returns generic 'Invalid mobile or password' (correct behavior), NOT 'No password set'. To reproduce the 'No password set' branch, use a mobile that only went through /auth/login (OTP request) without /auth/register — e.g., a fresh 10-digit number. Test used 9000000789 for this."
+  ],
+  "updated_files": ["/app/backend/tests/test_password_login.py"],
+  "success_rate": {"backend": "100% (6/6)", "frontend": "100% (all toggle + 3 login variants + OTP regression)"},
+  "test_credentials": "9911223344/secret123 (password user, seeded); 9876543210 OTP-only path (has password pass123 in seed but OTP works with 123456); fresh 9000000xxx numbers for password-less branch",
+  "seed_data_creation": "Created ephemeral shell users 9000000123 and 9000000789 via /auth/login (no register → no password) to hit the 'No password set' branch.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "New endpoint POST /api/auth/password-login is fully functional (ApiResponse envelope). Frontend AuthFlow has mode toggle with testids: login-mode-otp, login-mode-password, login-password-input, login-hint-otp, login-hint-password. OTP verify testids remain: otp-input, otp-verify-btn, otp-change-btn. OTP flow untouched. pytest file at /app/backend/tests/test_password_login.py can be re-run.",
+  "rca of the issue": "N/A — no bugs. Only clarification: the 'No password set' branch requires a user record without an encoded password. 9876543210 in the seeded DB has a password, so the test used a fresh mobile that only registered a shell record via OTP-login."
+}

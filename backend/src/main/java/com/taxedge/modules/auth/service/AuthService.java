@@ -99,6 +99,27 @@ public class AuthService {
     }
 
     /**
+     * Alternative login for return users who set a password during /auth/register.
+     * Returns the same JWT as the OTP flow. 401 on missing/incorrect password.
+     */
+    public AuthResponse passwordLogin(PasswordLoginRequest req) {
+        User user = userRepo.findByMobile(req.getMobile())
+                .orElseThrow(() -> new ApiException("Invalid mobile or password", HttpStatus.UNAUTHORIZED));
+        if (user.getPassword() == null || user.getPassword().isBlank()) {
+            throw new ApiException("No password set for this account — use OTP login", HttpStatus.UNAUTHORIZED);
+        }
+        if (!encoder.matches(req.getPassword(), user.getPassword())) {
+            throw new ApiException("Invalid mobile or password", HttpStatus.UNAUTHORIZED);
+        }
+        if (!user.isEnabled()) {
+            throw new ApiException("Account disabled", HttpStatus.FORBIDDEN);
+        }
+        String token = jwtService.generate(user.getMobile(),
+                Map.of("role", user.getRole().name(), "uid", user.getId()));
+        return new AuthResponse(token, UserDTO.from(user), user.isProfileComplete());
+    }
+
+    /**
      * Step 3 (post-OTP): complete the profile. Upserts by mobile.
      */
     public AuthResponse register(RegisterRequest req) {

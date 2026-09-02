@@ -64,6 +64,7 @@
 /app/backend/src/main/java/com/taxedge/modules/itr/controller/ItrController.java
 /app/backend/src/main/java/com/taxedge/core/security/JwtFilter.java
 /app/backend/src/main/java/com/taxedge/modules/auth/dto/AuthResponse.java
+/app/backend/src/main/java/com/taxedge/modules/auth/dto/PasswordLoginRequest.java
 /app/backend/src/main/java/com/taxedge/modules/document/service/DocumentService.java
 /app/backend/src/main/java/com/taxedge/modules/gst/service/GstService.java
 /app/backend/src/main/java/com/taxedge/modules/insurance/controller/InsuranceController.java

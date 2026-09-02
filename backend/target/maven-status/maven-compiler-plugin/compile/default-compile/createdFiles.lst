@@ -38,6 +38,7 @@ com/taxedge/modules/tds/dto/TdsRequest.class
 com/taxedge/modules/tds/entity/TdsRecord.class
 com/taxedge/modules/notification/service/NotificationService.class
 com/taxedge/modules/itr/entity/ItrReturn.class
+com/taxedge/modules/auth/dto/PasswordLoginRequest.class
 com/taxedge/modules/tds/entity/TdsRecord$TdsRecordBuilder.class
 com/taxedge/modules/payment/dto/PaymentRequest.class
 com/taxedge/modules/auth/dto/LoginRequest.class

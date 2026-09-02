@@ -59,3 +59,8 @@ OTP_STUB_CODE=123456
 - Login screen: `POST /auth/login {mobile}` → route to OTP screen.
 - OTP screen: `POST /auth/otp/verify {mobile, otp}` → store `token`; if `registered:false` route to profile screen, else home.
 - Profile screen: `POST /auth/register {...full profile}` with `Authorization: Bearer <token>` (optional here; endpoint is open for post-OTP completion). Response returns updated JWT.
+
+## Update — 2026-01 · Password Login
+- New endpoint `POST /auth/password-login` `{mobile, password}` → same `ApiResponse<AuthResponse>` envelope as `/auth/otp/verify`. 401 on wrong password, 401 on "no password set" (OTP-only account), 403 on disabled account.
+- Frontend login card now has an **OTP / Password** pill toggle (`[data-testid=login-mode-toggle]`). Password fields (`login-password-input`) appear when the Password tab is active; CTA text switches from "Send OTP" to "Sign in". OTP path is unchanged.
+- Regression + new tests: **6/6 backend, 100% frontend** (see `/app/test_reports/iteration_4.json`).

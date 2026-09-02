@@ -80,8 +80,10 @@ function BrandPanel() {
 }
 
 function AuthFlow({ onAuthed }) {
-  const [step, setStep] = useState("mobile"); // mobile → otp
+  const [mode, setMode] = useState("otp"); // "otp" | "password"
+  const [step, setStep] = useState("mobile"); // mobile → otp (only used when mode=otp)
   const [mobile, setMobile] = useState("");
+  const [password, setPassword] = useState("");
   const [devOtp, setDevOtp] = useState("");
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
@@ -101,14 +103,58 @@ function AuthFlow({ onAuthed }) {
     } finally { setLoading(false); }
   };
 
+  const passwordLogin = async (e) => {
+    e?.preventDefault();
+    setErr("");
+    if (!/^\d{10}$/.test(mobile)) return setErr("Enter a valid 10-digit mobile number");
+    if (!password) return setErr("Enter your password");
+    setLoading(true);
+    try {
+      const r = await api.post("/auth/password-login", { mobile, password });
+      const { token, user } = r.data.data;
+      toast(`Welcome back, ${user.fullName || "user"}`, "success");
+      onAuthed(token, user);
+    } catch (e2) {
+      setErr(e2?.response?.data?.message || "Invalid mobile or password");
+    } finally { setLoading(false); }
+  };
+
+  const switchMode = (m) => {
+    setMode(m);
+    setStep("mobile");
+    setErr("");
+    setPassword("");
+    setDevOtp("");
+  };
+
   return (
     <div className="te-auth">
       <BrandPanel />
       <section className="te-auth__form">
-        {step === "mobile" ? (
-          <form className="te-card" onSubmit={requestOtp} data-testid="login-card">
+        {step === "otp" ? (
+          <OtpStep mobile={mobile} devOtp={devOtp} onAuthed={onAuthed} onBack={() => setStep("mobile")} />
+        ) : (
+          <form className="te-card" onSubmit={mode === "otp" ? requestOtp : passwordLogin} data-testid="login-card">
             <h2>Welcome back 👋</h2>
-            <p className="muted">Sign in with your mobile number. We'll text you a code.</p>
+            <p className="muted">
+              {mode === "otp" ? "Sign in with your mobile number. We'll text you a code." : "Sign in with your mobile and password."}
+            </p>
+
+            <div className="te-authmode" data-testid="login-mode-toggle">
+              <button type="button"
+                className={`te-authmode__tab ${mode === "otp" ? "active" : ""}`}
+                onClick={() => switchMode("otp")}
+                data-testid="login-mode-otp">
+                OTP
+              </button>
+              <button type="button"
+                className={`te-authmode__tab ${mode === "password" ? "active" : ""}`}
+                onClick={() => switchMode("password")}
+                data-testid="login-mode-password">
+                Password
+              </button>
+            </div>
+
             <label className="te-label" htmlFor="mob">Mobile Number</label>
             <div className="te-input--phone">
               <div className="cc">+91</div>
@@ -123,18 +169,39 @@ function AuthFlow({ onAuthed }) {
                 maxLength={10}
               />
             </div>
+
+            {mode === "password" && (
+              <div className="te-field" style={{ marginTop: 16 }}>
+                <label className="te-label" htmlFor="pwd">Password</label>
+                <input
+                  id="pwd"
+                  data-testid="login-password-input"
+                  className="te-input"
+                  type="password"
+                  placeholder="Your password"
+                  value={password}
+                  onChange={(e) => { setPassword(e.target.value); if (err) setErr(""); }}
+                />
+              </div>
+            )}
+
             {err && <div className="te-error" data-testid="login-error">{err}</div>}
             <div style={{ marginTop: 20 }}>
               <button type="submit" className="te-btn te-btn--primary" disabled={loading} data-testid="login-continue-btn">
-                {loading ? <span className="te-spin" /> : "Send OTP"}
+                {loading ? <span className="te-spin" /> : mode === "otp" ? "Send OTP" : "Sign in"}
               </button>
             </div>
-            <div className="te-hint">
-              <b>Dev mode:</b> OTP is always <code>123456</code>. Any 10-digit mobile works.
-            </div>
+
+            {mode === "otp" ? (
+              <div className="te-hint" data-testid="login-hint-otp">
+                <b>Dev mode:</b> OTP is always <code>123456</code>. Any 10-digit mobile works.
+              </div>
+            ) : (
+              <div className="te-hint" data-testid="login-hint-password" style={{ background: "#eff6ff", borderColor: "#bfdbfe", color: "#1e40af" }}>
+                Only works if you set a password during profile setup. New here? Use OTP.
+              </div>
+            )}
           </form>
-        ) : (
-          <OtpStep mobile={mobile} devOtp={devOtp} onAuthed={onAuthed} onBack={() => setStep("mobile")} />
         )}
       </section>
     </div>
