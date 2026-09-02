@@ -1,0 +1,40 @@
+{
+  "summary": "Frontend E2E test of TaxEdge SPA. Preview loads correctly (login card renders — original 'blank page' bug is fixed). Full flow tested: mobile login -> OTP -> profile completion -> dashboard with all 8 module tabs (Overview, GST, ITR, TDS, Insurance, Loans, Documents, Payments, Notifications) + logout. 18/18 assertions passed once a workaround for one bug was applied. One real functional bug identified: the profile registration form sends an empty password string which the backend rejects (400), blocking new-user onboarding when the (optional) password field is left blank.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "POST /api/auth/register", "issue": "Rejects payload with password='' (empty string) with 400 'password must be at least 6 chars'. Since the frontend labels password as optional, backend should also accept an absent/empty password (or the frontend must omit the key)."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "ProfileForm", "issue": "Sends empty-string password to /auth/register when user leaves the optional password field blank -> backend 400 -> user is stuck on the profile screen with only a generic toast ('Could not save profile'). Fix: omit password key when form.password is empty (or send undefined). Repro: register any new mobile, complete profile without entering a password, click 'Save & enter dashboard'.", "selector": "[data-testid=profile-submit-btn]", "priority": "HIGH"},
+      {"component": "OtpStep", "issue": "OTP auto-submit relies on onChange of a visually hidden <input class=te-otp-hidden>. Playwright's default click on this input is blocked by the parent form intercepting pointer events. Not a user-facing bug (real users type via keyboard which does fire onChange), but the visually hidden input has pointer-events implicit on it — makes automation fragile. Consider using aria-hidden or explicitly focusing on click of the cell grid.", "selector": "[data-testid=otp-input]", "priority": "LOW"}
+    ],
+    "integration_issues": [
+      {"flow": "New-user onboarding (register)", "issue": "Blocked when password left blank due to bug above.", "affected_selectors": ["[data-testid=profile-submit-btn]"]}
+    ],
+    "design_issues": []
+  },
+  "test_report_links": [],
+  "action_items": [
+    "Fix ProfileForm submit in /app/frontend/src/App.js: strip empty-string fields (at minimum 'password') from the /auth/register payload, or send undefined instead of ''. Recommended change: `const payload = { ...form, pan: form.pan.toUpperCase() }; if (!payload.password) delete payload.password;`",
+    "Alternatively / additionally: relax backend validation to allow null/empty password since the frontend advertises it as optional.",
+    "Surface backend validation error text in a visible field-level error under the password input (currently only a toast that disappears in 3s)."
+  ],
+  "critical_code_review_comments": [
+    "App.js is ~830 lines and holds every screen + all module field definitions. Consider splitting into /components (AuthFlow, OtpStep, ProfileForm, Dashboard, ModulePage, Documents, Payments, Notifications) plus /modules/*Fields.js for maintainability.",
+    "ProfileForm serializes all form fields including empty strings — a single sanitizer would prevent the observed 400.",
+    "ModulePage.submit skips empty required checks silently when v == null but not when v === '' with f.required=false — mostly fine but consider omitting empty optional keys for parity with the backend contract.",
+    "OTP hidden input pattern: consider using an OTP-input library or six separate inputs — the current 'cells + hidden input' is accessible but hard to automate and unusual UX (paste works but the caret is invisible).",
+    "onLogout does not call any /auth/logout endpoint (JWT is only cleared client-side). If the backend supports token revocation, wire it in."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "not tested this iteration (see iteration_1)", "frontend": "94% (17/18 without workaround: profile save fails when password blank; 18/18 with password supplied)"},
+  "test_credentials": "Any random 10-digit mobile + OTP 123456 (STUB). For profile registration, MUST currently supply a password >= 6 chars due to the bug above.",
+  "seed_data_creation": "One new user was created per test run (random mobile) with GST/ITR/TDS/Insurance/Loan/Payment records. Uploaded document was deleted at the end. Records for other resources remain associated with the throwaway user.",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Preview loads fine. All 9 tabs, all CRUD forms, EMI calculation for loans, document upload+download+delete, payment initiate+callback, and logout are working end-to-end. The ONLY blocker for a real new user is the empty-password bug in ProfileForm -> /auth/register. After main agent fixes that (either sanitize the payload in App.js or relax the backend Pydantic/Bean validation), re-run the same flow WITHOUT filling profile-password and confirm tab-overview renders. Use page.evaluate + native input setter to fill the hidden OTP input (see script), or click otp-verify-btn with force=True.",
+  "rca of the issue": "Bug: New-user registration fails when the optional password field is blank. RCA: In /app/frontend/src/App.js ProfileForm.submit() posts `{ ...form, pan: form.pan.toUpperCase() }` where form.password defaults to '' (empty string). The Spring Boot AuthService register endpoint validates that if 'password' is present, its length >= 6, and it treats empty string as present -> returns 400 'password must be at least 6 chars'. Reproduction: (1) load preview, (2) enter fresh 10-digit mobile, (3) OTP 123456, (4) fill only the required fields on the profile card, leave password blank, (5) click Save -> stuck on profile screen, network shows POST /api/auth/register 400. Mitigation: in ProfileForm.submit strip empty-string fields before posting, e.g. `Object.keys(payload).forEach(k => payload[k] === '' && delete payload[k]);`."
+}

@@ -1,0 +1,21 @@
+{
+  "summary": "Targeted retest of ProfileForm password-empty bug. Registered a brand-new user leaving [data-testid=profile-password] blank; dashboard loaded successfully with tab-overview, nav-username, overview-kpis all visible. Sanity path with password (>=6 chars) also reaches dashboard. Logout returns to login-card. Bug is FIXED.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Review request listed KPI ids (kpi-mca, kpi-income-tax, kpi-esi-pf, kpi-labour, kpi-fema) that do NOT exist in the app. Actual 8 KPIs are kpi-gst, kpi-itr, kpi-tds, kpi-insurance, kpi-loans, kpi-documents, kpi-payments, kpi-notifications. All 8 render correctly. Main agent should align documentation with actual testids."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "n/a (skipped)", "frontend": "100%"},
+  "seed_data_creation": "Two ephemeral users created via random 10-digit mobiles (one no-password, one with password 'secret123'). No cleanup needed for retest scope.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "ProfileForm now strips empty-string/null/undefined fields before POST /api/auth/register. Both no-password and with-password registration flows verified end-to-end on preview URL. Overview KPI ids in app are gst/itr/tds/insurance/loans/documents/payments/notifications (8 total).",
+  "rca of the issue": "Previously ProfileForm sent password='' which failed backend pydantic min_length validation → 400. Fix strips empty/null/undefined keys client-side so 'password' is omitted entirely when blank, letting backend treat it as optional. Verified fix works."
+}

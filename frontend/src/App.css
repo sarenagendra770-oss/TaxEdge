@@ -1,34 +1,238 @@
-.App-logo {
-    height: 40vmin;
-    pointer-events: none;
+/* TaxEdge web dashboard theme — navy + orange, matches the RN mobile app */
+
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  font-family: "Manrope", "Inter", system-ui, -apple-system, sans-serif;
+  background: #f6f8fb;
+  color: #0f172a;
+  -webkit-font-smoothing: antialiased;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-    .App-logo {
-        animation: App-logo-spin infinite 20s linear;
-    }
+.te-shell { min-height: 100vh; display: flex; flex-direction: column; }
+
+/* ---------- auth screens ---------- */
+.te-auth {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: #f6f8fb;
+}
+@media (max-width: 900px) { .te-auth { grid-template-columns: 1fr; } }
+
+.te-auth__brand {
+  background: radial-gradient(1200px 800px at 20% 10%, #063271 0%, #00204a 55%, #001636 100%);
+  color: #fff;
+  padding: 56px 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+}
+.te-auth__brand::before {
+  content: "";
+  position: absolute; top: -80px; right: -80px;
+  width: 320px; height: 320px; border-radius: 50%;
+  background: #f97316; opacity: 0.14; filter: blur(20px);
+}
+.te-auth__brand::after {
+  content: "";
+  position: absolute; bottom: -120px; left: -60px;
+  width: 380px; height: 380px; border-radius: 50%;
+  background: #38bdf8; opacity: 0.08; filter: blur(30px);
+}
+.te-brand__logo {
+  display: inline-flex; align-items: center; gap: 12px;
+  font-weight: 800; letter-spacing: 2px; font-size: 20px;
+}
+.te-brand__logo-dot {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  display: grid; place-items: center; color: #fff; font-weight: 800;
+  box-shadow: 0 8px 24px rgba(249,115,22,0.4);
+}
+.te-brand__hero { margin: auto 0; z-index: 1; }
+.te-brand__hero h1 {
+  font-size: 44px; line-height: 1.1; margin: 0 0 16px; letter-spacing: -1px;
+  font-weight: 800;
+}
+.te-brand__hero h1 span { color: #fdba74; }
+.te-brand__hero p { color: #cbd5e1; font-size: 16px; line-height: 1.6; max-width: 460px; }
+.te-brand__stats {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+  padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.08); z-index: 1;
+}
+.te-brand__stat b { display: block; color: #fff; font-size: 24px; font-weight: 800; }
+.te-brand__stat span { color: #94a3b8; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; }
+
+.te-auth__form {
+  display: flex; align-items: center; justify-content: center;
+  padding: 40px 24px;
+}
+.te-card {
+  width: 100%; max-width: 440px;
+  background: #fff; border-radius: 20px;
+  box-shadow: 0 24px 60px rgba(15,23,42,0.08), 0 2px 8px rgba(15,23,42,0.04);
+  padding: 36px 32px;
+}
+.te-card h2 { margin: 0 0 6px; font-size: 26px; font-weight: 800; color: #0f172a; }
+.te-card p.muted { color: #64748b; margin: 0 0 24px; font-size: 14px; }
+
+.te-label { display: block; font-size: 13px; font-weight: 600; color: #0f274a; margin-bottom: 8px; }
+.te-input, .te-select, .te-textarea {
+  width: 100%; height: 46px; border: 1.5px solid #e2e8f0; border-radius: 12px;
+  padding: 0 14px; font-size: 15px; background: #fff; color: #0f172a;
+  transition: border-color 0.15s, box-shadow 0.15s; outline: none;
+}
+.te-textarea { height: auto; padding: 12px 14px; min-height: 80px; resize: vertical; }
+.te-input:focus, .te-select:focus, .te-textarea:focus {
+  border-color: #f97316;
+  box-shadow: 0 0 0 4px rgba(249,115,22,0.12);
+}
+.te-input--phone { display: flex; align-items: center; gap: 10px; }
+.te-input--phone .cc {
+  height: 46px; width: 62px; border: 1.5px solid #e2e8f0; border-radius: 12px;
+  display: grid; place-items: center; font-weight: 700; color: #0f172a; background: #f8fafc;
+}
+.te-field { margin-bottom: 16px; }
+.te-error { color: #dc2626; font-size: 12px; margin-top: 6px; font-weight: 500; }
+
+.te-btn {
+  width: 100%; height: 50px; border: 0; border-radius: 12px; cursor: pointer;
+  font-size: 15px; font-weight: 700; letter-spacing: 0.3px;
+  transition: transform 0.06s, box-shadow 0.15s, background 0.15s;
+}
+.te-btn:active { transform: translateY(1px); }
+.te-btn--primary {
+  background: linear-gradient(135deg, #f97316, #ea580c); color: #fff;
+  box-shadow: 0 10px 24px rgba(249,115,22,0.35);
+}
+.te-btn--primary:hover { box-shadow: 0 14px 30px rgba(249,115,22,0.45); }
+.te-btn--ghost { background: transparent; color: #f97316; box-shadow: none; }
+.te-btn--outline { background: #fff; color: #0f172a; border: 1.5px solid #e2e8f0; }
+.te-btn--danger { background: #fee2e2; color: #b91c1c; }
+.te-btn[disabled] { opacity: 0.6; cursor: not-allowed; }
+.te-btn--sm { height: 36px; font-size: 13px; padding: 0 14px; width: auto; }
+
+.te-otp-grid { display: flex; gap: 10px; justify-content: space-between; margin: 8px 0 20px; }
+.te-otp-cell {
+  flex: 1; height: 56px; border: 1.5px solid #e2e8f0; border-radius: 14px;
+  display: grid; place-items: center; font-size: 22px; font-weight: 700; color: #0f172a;
+  background: #fff;
+}
+.te-otp-cell.active { border-color: #0f2e5c; background: #fff; }
+.te-otp-hidden {
+  position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none;
 }
 
-.App-header {
-    background-color: #0f0f10;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
-    color: white;
+.te-hint {
+  margin-top: 14px; padding: 10px 12px; background: #fff7ed; border: 1px solid #fed7aa;
+  border-radius: 10px; color: #9a3412; font-size: 13px;
+}
+.te-hint b { font-weight: 700; }
+
+/* ---------- dashboard ---------- */
+.te-nav {
+  background: #00204a; color: #fff; padding: 14px 28px;
+  display: flex; align-items: center; gap: 20px;
+  position: sticky; top: 0; z-index: 20;
+  box-shadow: 0 4px 20px rgba(0,32,74,0.15);
+}
+.te-nav__brand { display: flex; align-items: center; gap: 12px; font-weight: 800; letter-spacing: 2px; }
+.te-nav__spacer { flex: 1; }
+.te-nav__user { display: flex; align-items: center; gap: 12px; font-size: 14px; }
+.te-nav__avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: linear-gradient(135deg, #f97316, #ea580c); color: #fff;
+  display: grid; place-items: center; font-weight: 700; font-size: 14px;
+}
+.te-nav__logout { background: transparent; color: #fdba74; border: 1px solid rgba(253,186,116,0.4); border-radius: 8px; padding: 6px 12px; cursor: pointer; font-weight: 600; font-size: 13px; }
+.te-nav__logout:hover { background: rgba(253,186,116,0.1); }
+
+.te-container { max-width: 1200px; margin: 0 auto; padding: 28px; width: 100%; }
+.te-page-title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+.te-page-title h1 { font-size: 26px; font-weight: 800; margin: 0; letter-spacing: -0.3px; }
+.te-page-title p { color: #64748b; margin: 4px 0 0; font-size: 14px; }
+
+.te-tabs {
+  display: flex; gap: 6px; padding: 6px; background: #fff; border-radius: 14px;
+  margin-bottom: 20px; overflow-x: auto;
+  box-shadow: 0 1px 3px rgba(15,23,42,0.05);
+}
+.te-tab {
+  padding: 10px 16px; border-radius: 10px; border: 0; background: transparent;
+  color: #475569; font-weight: 600; font-size: 13.5px; cursor: pointer;
+  white-space: nowrap; transition: background 0.15s, color 0.15s;
+}
+.te-tab:hover { background: #f1f5f9; color: #0f172a; }
+.te-tab.active { background: #00204a; color: #fff; box-shadow: 0 4px 12px rgba(0,32,74,0.2); }
+
+.te-grid { display: grid; grid-template-columns: 380px 1fr; gap: 20px; }
+@media (max-width: 900px) { .te-grid { grid-template-columns: 1fr; } }
+
+.te-panel {
+  background: #fff; border-radius: 16px; padding: 22px;
+  box-shadow: 0 1px 3px rgba(15,23,42,0.06), 0 8px 24px rgba(15,23,42,0.04);
+}
+.te-panel__title { font-size: 15px; font-weight: 700; margin: 0 0 14px; color: #0f172a; display: flex; align-items: center; gap: 8px; }
+.te-panel__title .badge {
+  background: #fff7ed; color: #ea580c; font-size: 11px; padding: 2px 8px;
+  border-radius: 999px; font-weight: 700;
 }
 
-.App-link {
-    color: #61dafb;
+.te-list { display: flex; flex-direction: column; gap: 10px; }
+.te-list__empty {
+  padding: 40px 20px; text-align: center; color: #94a3b8; border: 2px dashed #e2e8f0; border-radius: 12px;
+}
+.te-item {
+  padding: 14px 16px; background: #f8fafc; border-radius: 12px;
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
+  border: 1px solid #eef2f7; transition: transform 0.1s, box-shadow 0.15s;
+}
+.te-item:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(15,23,42,0.06); }
+.te-item__title { font-weight: 700; color: #0f172a; font-size: 14.5px; margin-bottom: 4px; }
+.te-item__meta { color: #64748b; font-size: 12.5px; line-height: 1.5; }
+.te-item__meta strong { color: #0f172a; font-weight: 600; }
+.te-status {
+  display: inline-block; padding: 3px 10px; border-radius: 999px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase;
+}
+.te-status--pending, .te-status--draft { background: #fef3c7; color: #92400e; }
+.te-status--success, .te-status--filed, .te-status--approved, .te-status--active { background: #dcfce7; color: #166534; }
+.te-status--failed, .te-status--rejected, .te-status--lapsed { background: #fee2e2; color: #991b1b; }
+.te-status--info { background: #dbeafe; color: #1e40af; }
+
+.te-row { display: flex; gap: 10px; }
+.te-row > * { flex: 1; }
+
+.te-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 24px; }
+.te-kpi {
+  background: #fff; border-radius: 14px; padding: 18px;
+  box-shadow: 0 1px 3px rgba(15,23,42,0.05);
+  border-left: 4px solid #f97316;
+}
+.te-kpi b { display: block; font-size: 24px; font-weight: 800; color: #0f172a; margin: 4px 0; }
+.te-kpi span { color: #64748b; font-size: 12px; letter-spacing: 0.6px; text-transform: uppercase; font-weight: 600; }
+
+.te-toast-wrap { position: fixed; top: 20px; right: 20px; z-index: 100; display: flex; flex-direction: column; gap: 10px; }
+.te-toast {
+  background: #0f172a; color: #fff; padding: 12px 18px; border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2); font-size: 14px; font-weight: 500;
+  animation: te-slide-in 0.2s ease-out;
+  max-width: 360px;
+}
+.te-toast--error { background: #dc2626; }
+.te-toast--success { background: #16a34a; }
+@keyframes te-slide-in {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
 }
 
-@keyframes App-logo-spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+.te-spin {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff;
+  animation: te-spin 0.6s linear infinite; display: inline-block;
 }
+@keyframes te-spin { to { transform: rotate(360deg); } }
