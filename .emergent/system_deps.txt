@@ -1,0 +1,4 @@
+cron=3.0pl1-162
+mariadb-server=1:10.11.18-0+deb12u1
+maven=3.8.7-1
+openjdk-17-jdk-headless=17.0.20.1+1-1~deb12u1

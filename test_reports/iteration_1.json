@@ -1,0 +1,30 @@
+{
+  "summary": "Backend regression suite (pytest) run against Spring Boot TaxEdge API on external preview URL. 20/21 tests passed. All modules functional: auth+OTP stub, user profile, GST/ITR/TDS/Insurance/Loan CRUD with user isolation, Loan EMI computation, Loan status role guard, Document multipart upload+download+delete, Payment stub initiate+callback, Notifications role-guarded create+list+unread-count+mark-read, CORS preflight, duplicate email conflict. Only deviation: unauthenticated GET /api/users/me returns 403 instead of the specified 401.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "GET /api/users/me (no token)", "issue": "Returns 403 Forbidden instead of 401 Unauthorized. This is Spring Security's default when no JWT is present. Spec requires 401. Fix: add a custom AuthenticationEntryPoint in SecurityConfig that returns 401 for missing/invalid credentials, distinct from 403 (access denied)."}
+    ]
+  },
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": ["/app/backend/tests/backend_test.py", "/app/test_reports/pytest/pytest_results.xml"],
+  "action_items": [
+    "In /app/backend/src/main/java/com/taxedge/core/security/SecurityConfig.java (or JwtAuthFilter), configure an AuthenticationEntryPoint (e.g. new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)) so missing/invalid JWT results in 401, keeping 403 only for role failures."
+  ],
+  "critical_code_review_comments": [
+    "Response envelope inconsistency: /auth/login and /auth/otp/send return LoginResponse directly while every other endpoint uses ApiResponse<{success,message,data,timestamp}>. Consider unifying.",
+    "OTP stub echoes the code as devOtp in the login response — good for dev but must be gated behind a profile/env flag before production.",
+    "AuthenticationEntryPoint missing → 403 for unauthenticated requests (see minor issue above).",
+    "PaymentService: /payments/callback has no signature/HMAC verification and accepts any transactionId+status. Acceptable for STUB but should reject spoofed callbacks in production.",
+    "GstReturnRequest uses periodMonth/periodYear (Integer) — should validate ranges (1-12 for month, sensible year bounds).",
+    "Document entity exposes 'originalName' while typical convention is 'originalFileName'/'fileName'; name it consistently across modules."
+  ],
+  "updated_files": ["/app/backend/tests/backend_test.py"],
+  "success_rate": {"backend": "95% (20/21)", "frontend": "n/a"},
+  "test_credentials": "Random 10-digit mobiles per run; OTP always 123456. Admin role bumped via `mysql -uroot taxedge -e \"UPDATE users SET role='ADMIN' WHERE mobile='<m>'\"` then re-login to refresh JWT.",
+  "seed_data_creation": "Each run creates 3 fresh users (regular, other, admin) plus one duplicate-email attempt user. No cleanup performed (would require admin delete endpoints).",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Run: `pytest /app/backend/tests/backend_test.py -v`. pytest.ini forces `-n 2 --dist loadscope`. Fixtures create users on-the-fly using random mobiles. /auth/register requires `mobile` in the body in addition to the Bearer token. GST/ITR/TDS/Loan DTOs each have specific required fields (see backend_test.py payloads). Loan uses 'amount' not 'principal'. Document response field is 'originalName'. Only known deviation: unauth /users/me returns 403 (Spring default) instead of 401.",
+  "rca of the issue": "Unauthenticated 403 vs 401: Spring Security's default AccessDeniedHandler/AuthenticationEntryPoint chain returns 403 when the JwtAuthFilter finds no token and lets the FilterSecurityInterceptor reject. Root cause: SecurityConfig does not register an AuthenticationEntryPoint that emits 401 on missing credentials. Mitigation: `http.exceptionHandling(e -> e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))`."
+}
